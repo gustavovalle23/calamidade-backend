@@ -51,7 +51,7 @@ jobs:
         run: docker-compose -f docker-compose.yaml ps
 
       - name: Run NestJS tests
-        run: docker-compose -f docker-compose.yaml exec api npm run test:e2e
+        run: docker-compose -f docker-compose.yaml exec -T api npm run test:e2e
 
       - name: Shutdown Docker services
         run: docker-compose -f docker-compose.yaml down
