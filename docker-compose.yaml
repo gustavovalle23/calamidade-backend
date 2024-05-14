@@ -1,5 +1,4 @@
-name: calamidade-backend
-version: '3.3'
+version: '3'
 services:
   postgres:
     image: postgres:15.3-alpine
