@@ -41,6 +41,9 @@ jobs:
       - name: Build Docker image
         run: docker-compose -f docker-compose.yaml build
 
+      - name: Exporting project name
+        run: export COMPOSE_PROJECT_NAME=calamidade-backend
+
       - name: Start Docker services
         run: docker-compose -f docker-compose.yaml up -d
 
