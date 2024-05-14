@@ -11,24 +11,41 @@ on:
       - development
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x]
+    services:
+      postgres:
+        image: postgres:15.3-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: api
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      maildev:
+        image: maildev/maildev
+        ports:
+          - 1080:1080
+          - 1025:1025
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
+      - name: Build Docker image
+        run: docker-compose -f docker-compose.yml build
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Start Docker services
+        run: docker-compose -f docker-compose.yml up -d
 
-      - name: Run Tests
-        run: npm run test:e2e
+      - name: Wait for services to be ready
+        run: docker-compose -f docker-compose.yml ps
+
+      - name: Run NestJS tests
+        run: docker-compose -f docker-compose.yml exec api npm run test:e2e
+
+      - name: Shutdown Docker services
+        run: docker-compose -f docker-compose.yml down
