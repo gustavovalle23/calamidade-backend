@@ -32,6 +32,22 @@ jobs:
       - name: Wait for services to be ready
         run: docker-compose -f docker-compose.yaml ps
 
+      # Check if Docker services are running
+      - name: Check Docker services
+        run: docker-compose -f docker-compose.yaml ps
+        continue-on-error: true
+
+      # Check if the necessary ports are exposed
+      - name: Check exposed ports
+        run: docker-compose -f docker-compose.yaml config | grep '0.0.0.0'
+        continue-on-error: true
+
+      # Check service logs
+      - name: Display service logs
+        run: docker-compose -f docker-compose.yaml logs
+        continue-on-error: true
+
+      # Run NestJS tests
       - name: Run NestJS tests
         run: docker-compose -f docker-compose.yaml exec -T api npm run test:e2e
 
