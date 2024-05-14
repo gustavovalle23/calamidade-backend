@@ -39,13 +39,21 @@ jobs:
 
       # Check if the necessary ports are exposed
       - name: Check exposed ports
-        run: docker-compose -f docker-compose.yaml config | grep '0.0.0.0'
+        run: docker-compose -f docker-compose.yaml config
         continue-on-error: true
+
+      # Pause for 10 seconds
+      - name: Wait for 10 seconds
+        run: sleep 10
 
       # Check service logs
       - name: Display service logs
         run: docker-compose -f docker-compose.yaml logs
         continue-on-error: true
+
+      # Pause for 10 seconds
+      - name: Wait for 10 seconds
+        run: sleep 10
 
       # Run NestJS tests
       - name: Run NestJS tests
