@@ -18,7 +18,7 @@ jobs:
       postgres:
         image: postgres:15.3-alpine
         ports:
-          - 5432:5432
+          - 5433:5432
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
@@ -28,8 +28,8 @@ jobs:
       maildev:
         image: maildev/maildev
         ports:
-          - 1080:1080
-          - 1025:1025
+          - 1081:1080
+          - 1026:1025
 
     steps:
       - name: Checkout Repository
