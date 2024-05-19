@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { EntityHelper } from "../../../utils/entity-helper";
+import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToOne, JoinColumn } from "typeorm";
 import { Expose } from "class-transformer";
+import { EntityHelper } from "src/utils/entity-helper";
 import { OrganizationEntity } from "src/modules/organization/entities/organization.entity";
+import { User } from "src/modules/user/entities/user.entity";
 
-@Entity({name: 'cooperated'})
+@Entity({ name: "cooperated" })
 export class CooperatedEntity extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
@@ -29,6 +30,10 @@ export class CooperatedEntity extends EntityHelper {
   @ManyToOne(() => OrganizationEntity, { eager: false })
   organization?: OrganizationEntity | null;
 
+  @OneToOne(() => User, user => user.cooperated)
+  @JoinColumn()
+  user: User;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -37,4 +42,8 @@ export class CooperatedEntity extends EntityHelper {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
 }

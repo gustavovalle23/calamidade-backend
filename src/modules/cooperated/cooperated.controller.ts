@@ -26,7 +26,7 @@ import { InfinityPaginationResultType } from '../../utils/types/infinity-paginat
 import { CooperatedEntity } from './entities/cooperated.entity';
 import { infinityPagination } from '../../utils/infinity-pagination';
 import { NullableType } from '../../utils/types/nullable.type';
-import { GetDocumentBodyDto } from '../auth/dto/auth-get-document.dto';
+import { GetDocumentBodyDto, GetDocumentResponseDto } from '../auth/dto/auth-get-document.dto';
 
 @ApiTags('Cooperateds')
 @Controller({
@@ -41,12 +41,8 @@ export class CooperatedController {
   })
   @Post("/document/validate")
   @HttpCode(HttpStatus.OK)
-  public async validateDocument(@Body() body: GetDocumentBodyDto): Promise<{name?: string,
-    document?: string,
-    email?: string,
-    phone?: string}
-  > {
-    return await this.cooperatedService.validateDocument(body.document);
+  public async validateDocument(@Body() body: GetDocumentBodyDto): Promise<GetDocumentResponseDto> {
+    return this.cooperatedService.validateDocument(body.document);
   }
 
   @Post()

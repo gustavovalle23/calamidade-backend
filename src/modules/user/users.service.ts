@@ -6,7 +6,6 @@ import { DeepPartial, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { NullableType } from '../../utils/types/nullable.type';
-import { OrganizationEntity } from '../organization/entities/organization.entity';
 import { CooperatedEntity } from '../cooperated/entities/cooperated.entity';
 
 @Injectable()
@@ -16,8 +15,6 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(CooperatedEntity)
     private cooperatedRepository: Repository<CooperatedEntity>,
-    @InjectRepository(OrganizationEntity)
-    private organizationRepository: Repository<OrganizationEntity>
     
   ) {}
 
