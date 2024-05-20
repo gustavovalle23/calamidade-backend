@@ -129,9 +129,13 @@ export class RequestService {
   }
 
   findManyWithPagination(paginationOptions: IPaginationOptions): Promise<RequestEntity[]> {
+    const { ordering } = paginationOptions;
     return this.requestRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: {
+        id: ordering ? ordering : "ASC",
+      },
     });
   }
 
