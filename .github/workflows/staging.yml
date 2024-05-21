@@ -4,8 +4,6 @@ on:
   push:
     branches: [staging]
 
-env:
-
 jobs:
   build:
     runs-on: ubuntu-latest
