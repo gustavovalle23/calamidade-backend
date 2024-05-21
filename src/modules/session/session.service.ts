@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptions } from 'src/utils/types/find-options.type';
-import { DeepPartial, Not, Repository } from 'typeorm';
-import { Session } from './entities/session.entity';
-import { NullableType } from '../../utils/types/nullable.type';
-import { User } from 'src/modules/user/entities/user.entity';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { FindOptions } from "src/utils/types/find-options.type";
+import { DeepPartial, Not, Repository } from "typeorm";
+import { Session } from "./entities/session.entity";
+import { NullableType } from "../../utils/types/nullable.type";
+import { User } from "src/modules/user/entities/user.entity";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class SessionService {
@@ -14,9 +15,15 @@ export class SessionService {
   ) {}
 
   async findOne(options: FindOptions<Session>): Promise<NullableType<Session>> {
-    return this.sessionRepository.findOne({
+    const session = await this.sessionRepository.findOne({
       where: options.where,
     });
+
+    if (!session) {
+      throw new ResourceNotFoundException();
+    }
+
+    return session;
   }
 
   async findMany(options: FindOptions<Session>): Promise<Session[]> {
@@ -29,14 +36,7 @@ export class SessionService {
     return this.sessionRepository.save(this.sessionRepository.create(data));
   }
 
-  async softDelete({
-    excludeId,
-    ...criteria
-  }: {
-    id?: Session['id'];
-    user?: Pick<User, 'id'>;
-    excludeId?: Session['id'];
-  }): Promise<void> {
+  async softDelete({ excludeId, ...criteria }: { id?: Session["id"]; user?: Pick<User, "id">; excludeId?: Session["id"] }): Promise<void> {
     await this.sessionRepository.softDelete({
       ...criteria,
       id: criteria.id ? criteria.id : excludeId ? Not(excludeId) : undefined,
