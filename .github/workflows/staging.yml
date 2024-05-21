@@ -1,0 +1,36 @@
+name: NestJS API CI Staging
+
+on:
+  push:
+    branches: [staging]
+
+env:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: "Setup env"
+        run: cp .github/env-staging .env
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build typescript
+        run: npm run build
+
+      - name: Serverless deploy
+        uses: serverless/github-action@v3.2.0
+        with:
+          args: deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_TOKEN: ${{ secrets.R2_TOKEN }}

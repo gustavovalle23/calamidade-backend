@@ -19,10 +19,8 @@ DATABASE_REJECT_UNAUTHORIZED=false
 
 # R2
 R2_REGION="auto"
-R2_ENDPOINT="https://AccountID.r2.cloudflarestorage.com"
-R2_ACCESS_KEY_ID="ACCESS KEY ID AND API"
-R2_SECRET_ACCESS_KEY="CLOUDFLARE SECRET ACCESS KEY"
-R2_BUCKET="coopartilhar"
+R2_ENDPOINT="https://a29c29799f7cd6cc71b9110f0e7d666d.r2.cloudflarestorage.com"
+R2_BUCKET="coopartilhar-staging"
 
 MAIL_HOST=localhost
 MAIL_PORT=1025
