@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreateCooperatedDto } from "./dto/create-cooperated.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CooperatedEntity } from "./entities/cooperated.entity";
@@ -7,6 +7,7 @@ import { IPaginationOptions } from "../../utils/types/pagination-options";
 import { EntityCondition } from "../../utils/types/entity-condition.type";
 import { NullableType } from "../../utils/types/nullable.type";
 import { OrganizationService } from "../organization/organization.service";
+import { GetDocumentResponseDto } from "../auth/dto/auth-get-document.dto";
 
 @Injectable()
 export class CooperatedService {
@@ -16,7 +17,7 @@ export class CooperatedService {
     private readonly organizationService: OrganizationService,
     private dataSource: DataSource,
   ) {}
-  
+
   async create(createCooperatedDto: CreateCooperatedDto) {
     const organization = await this.organizationService.findOne({ id: +createCooperatedDto.organization });
     if (!organization) throw new BadRequestException("organization of provided organization is not found");
@@ -50,9 +51,16 @@ export class CooperatedService {
     await this.cooperatedRepository.softDelete(id);
   }
 
-  async validateDocument(document: string): Promise<{ name?: string; document?: string; email?: string; phone?: string }> {
-    const cooperated = await this.cooperatedRepository.findOne({ where: { document: document.replace(/[^0-9]/g, "") } });
-    if (!cooperated) {
+  async validateDocument(documentNr: string): Promise<GetDocumentResponseDto> {
+    const result = await this.cooperatedRepository
+      .createQueryBuilder("cooperated")
+      .leftJoinAndSelect("cooperated.user", "user")
+      .select(["cooperated.id", "cooperated.email", "cooperated.firstName", "cooperated.lastName", "cooperated.phone", "cooperated.document", "user.id"])
+      .where("cooperated.document = :document", { document: documentNr })
+      .andWhere("cooperated.deletedAt IS NULL")
+      .getOne();
+
+    if (!result) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -62,11 +70,14 @@ export class CooperatedService {
       );
     }
 
+    const { fullName, document, email, phone, user } = result;
+
     return {
-      name: `${cooperated.firstName} ${cooperated.lastName}` || "",
-      document: cooperated.document || "",
-      email: cooperated.email || "",
-      phone: cooperated.phone || "",
+      name: fullName,
+      document,
+      email,
+      phone,
+      userId: user?.id,
     };
   }
 
