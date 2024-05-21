@@ -8,6 +8,7 @@ import { EntityCondition } from "src/utils/types/entity-condition.type";
 import { NullableType } from "src/utils/types/nullable.type";
 import { RequestService } from "../request/request.service";
 import { FileService } from "../file/file.service";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class AccidentsService {
@@ -38,10 +39,16 @@ export class AccidentsService {
     });
   }
 
-  findOne(fields: EntityCondition<AccidentEntity>): Promise<NullableType<AccidentEntity>> {
-    return this.accidentRepository.findOne({
+  async findOne(fields: EntityCondition<AccidentEntity>): Promise<NullableType<AccidentEntity>> {
+    const accident = await this.accidentRepository.findOne({
       where: fields,
     });
+
+    if (!accident) {
+      throw new ResourceNotFoundException();
+    }
+
+    return accident;
   }
 
   update(id: AccidentEntity["id"], payload: DeepPartial<AccidentEntity>): Promise<AccidentEntity> {
