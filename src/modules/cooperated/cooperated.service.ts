@@ -8,6 +8,7 @@ import { EntityCondition } from "../../utils/types/entity-condition.type";
 import { NullableType } from "../../utils/types/nullable.type";
 import { OrganizationService } from "../organization/organization.service";
 import { GetDocumentResponseDto } from "../auth/dto/auth-get-document.dto";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class CooperatedService {
@@ -32,10 +33,16 @@ export class CooperatedService {
     });
   }
 
-  findOne(fields: EntityCondition<CooperatedEntity>): Promise<NullableType<CooperatedEntity>> {
-    return this.cooperatedRepository.findOne({
+  async findOne(fields: EntityCondition<CooperatedEntity>): Promise<NullableType<CooperatedEntity>> {
+    const cooperated = await this.cooperatedRepository.findOne({
       where: fields,
     });
+
+    if (!cooperated) {
+      throw new ResourceNotFoundException();
+    }
+
+    return cooperated;
   }
 
   update(id: CooperatedEntity["id"], payload: DeepPartial<CooperatedEntity>): Promise<CooperatedEntity> {

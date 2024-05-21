@@ -1,9 +1,9 @@
 import { CreateRequestDto } from "./dto/create-request.dto";
 import { CreateRequestForOthersDto } from "./dto/create-request-for-others.dto";
 import { CreateUserDto } from "../user/dto/create-user.dto";
-import { CooperatedEntity } from '../cooperated/entities/cooperated.entity';
+import { CooperatedEntity } from "../cooperated/entities/cooperated.entity";
 import { EntityCondition } from "src/utils/types/entity-condition.type";
-import { HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IPaginationOptions } from "src/utils/types/pagination-options";
 import { JwtPayloadType } from "../auth/strategies/types/jwt-payload.type";
@@ -14,6 +14,7 @@ import { UpdateRequestDto } from "./dto/update-request.dto";
 import { User } from "../user/entities/user.entity";
 import { UsersService } from "../user/users.service";
 import { HashGeneratorUtil } from "src/utils/hash-generator";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class RequestService {
@@ -25,7 +26,7 @@ export class RequestService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
   ) {}
 
   async create(userJwtPayload: JwtPayloadType, createRequestDto: CreateRequestDto) {
@@ -80,9 +81,9 @@ export class RequestService {
       where: {
         document: createRequestForOthersDto.documentOfAssisted,
       },
-    })
+    });
 
-    if(assistedUser) {
+    if (assistedUser) {
       return this.requestRepository.save(
         this.requestRepository.create({
           ...createRequestForOthersDto,
@@ -91,16 +92,16 @@ export class RequestService {
           },
           godFather: {
             id: currentUser.id,
-          }
+          },
         }),
       );
-    }else {
+    } else {
       const assistedCooperated = await this.cooperatedRepository.findOne({
         where: {
-          document: createRequestForOthersDto.documentOfAssisted
-        }
-      })
-      
+          document: createRequestForOthersDto.documentOfAssisted,
+        },
+      });
+
       if (!assistedCooperated) {
         throw new HttpException(
           {
@@ -122,7 +123,7 @@ export class RequestService {
           },
           godFather: {
             id: currentUser.id,
-          }
+          },
         }),
       );
     }
@@ -139,10 +140,16 @@ export class RequestService {
     });
   }
 
-  findOne(fields: EntityCondition<RequestEntity>): Promise<NullableType<RequestEntity>> {
-    return this.requestRepository.findOne({
+  async findOne(fields: EntityCondition<RequestEntity>): Promise<NullableType<RequestEntity>> {
+    const request = await this.requestRepository.findOne({
       where: fields,
     });
+
+    if (!request) {
+      throw new ResourceNotFoundException();
+    }
+
+    return request;
   }
 
   update(id: number, updateRequestDto: UpdateRequestDto) {
@@ -164,8 +171,8 @@ export class RequestService {
     userDto.firstName = cooperated.firstName;
     userDto.lastName = cooperated.lastName;
     userDto.password = HashGeneratorUtil.generate();
-    userDto.document = cooperated.document ?? '';
-    userDto.telephone = cooperated.phone ?? ''
-    return userDto
+    userDto.document = cooperated.document ?? "";
+    userDto.telephone = cooperated.phone ?? "";
+    return userDto;
   }
 }

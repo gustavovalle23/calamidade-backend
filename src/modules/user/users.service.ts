@@ -1,12 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { EntityCondition } from 'src/utils/types/entity-condition.type';
-import { IPaginationOptions } from 'src/utils/types/pagination-options';
-import { DeepPartial, Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/user.entity';
-import { NullableType } from '../../utils/types/nullable.type';
-import { CooperatedEntity } from '../cooperated/entities/cooperated.entity';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { EntityCondition } from "src/utils/types/entity-condition.type";
+import { IPaginationOptions } from "src/utils/types/pagination-options";
+import { DeepPartial, Repository } from "typeorm";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { User } from "./entities/user.entity";
+import { NullableType } from "../../utils/types/nullable.type";
+import { CooperatedEntity } from "../cooperated/entities/cooperated.entity";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class UsersService {
@@ -15,18 +16,17 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(CooperatedEntity)
     private cooperatedRepository: Repository<CooperatedEntity>,
-    
   ) {}
 
   async create(createUser: CreateUserDto): Promise<User> {
-    var cooperatedSearched = await this.cooperatedRepository.findOne({where: {document: createUser.document}})
+    var cooperatedSearched = await this.cooperatedRepository.findOne({ where: { document: createUser.document } });
 
-    if(!cooperatedSearched) {
+    if (!cooperatedSearched) {
       throw new HttpException(
         {
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           errors: {
-            cooperated: 'cooperatedNotFound',
+            cooperated: "cooperatedNotFound",
           },
         },
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -36,27 +36,31 @@ export class UsersService {
     return await this.usersRepository.save(
       this.usersRepository.create({
         ...createUser,
-        cooperated: cooperatedSearched
+        cooperated: cooperatedSearched,
       }),
     );
   }
 
-  findManyWithPagination(
-    paginationOptions: IPaginationOptions,
-  ): Promise<User[]> {
+  findManyWithPagination(paginationOptions: IPaginationOptions): Promise<User[]> {
     return this.usersRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
     });
   }
 
-  findOne(fields: EntityCondition<User>): Promise<NullableType<User>> {
-    return this.usersRepository.findOne({
+  async findOne(fields: EntityCondition<User>): Promise<NullableType<User>> {
+    const user = await this.usersRepository.findOne({
       where: fields,
     });
+
+    if (!user) {
+      throw new ResourceNotFoundException();
+    }
+
+    return user;
   }
 
-  update(id: User['id'], payload: DeepPartial<User>): Promise<User> {
+  update(id: User["id"], payload: DeepPartial<User>): Promise<User> {
     return this.usersRepository.save(
       this.usersRepository.create({
         id,
@@ -65,7 +69,7 @@ export class UsersService {
     );
   }
 
-  async softDelete(id: User['id']): Promise<void> {
+  async softDelete(id: User["id"]): Promise<void> {
     await this.usersRepository.softDelete(id);
   }
 }

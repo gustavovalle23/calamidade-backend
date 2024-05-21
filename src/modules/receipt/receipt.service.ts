@@ -8,6 +8,7 @@ import { RequestStatusEnum } from "src/modules/request/enums/status.enum";
 import { IPaginationOptions } from "src/utils/types/pagination-options";
 import { NullableType } from "src/utils/types/nullable.type";
 import { EntityCondition } from "src/utils/types/entity-condition.type";
+import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 
 @Injectable()
 export class ReceiptService {
@@ -64,10 +65,16 @@ export class ReceiptService {
     });
   }
 
-  findOne(fields: EntityCondition<ReceiptEntity>): Promise<NullableType<ReceiptEntity>> {
-    return this.receiptRepository.findOne({
+  async findOne(fields: EntityCondition<ReceiptEntity>): Promise<NullableType<ReceiptEntity>> {
+    const receipt = await this.receiptRepository.findOne({
       where: fields,
     });
+
+    if (!receipt) {
+      throw new ResourceNotFoundException();
+    }
+
+    return receipt;
   }
 
   update(id: ReceiptEntity["id"], payload: DeepPartial<ReceiptEntity>): Promise<ReceiptEntity> {
