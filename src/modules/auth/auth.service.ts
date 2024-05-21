@@ -32,6 +32,7 @@ import { JwtRefreshPayloadType } from './strategies/types/jwt-refresh-payload.ty
 import { Session } from 'src/modules/session/entities/session.entity';
 import { JwtPayloadType } from './strategies/types/jwt-payload.type';
 import { OrganizationService } from 'src/modules/organization/organization.service';
+import { CooperatedService } from '../cooperated/cooperated.service';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +44,7 @@ export class AuthService {
     private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
+    private cooperatedService: CooperatedService
   ) { }
 
   async validateLogin(loginDto: AuthEmailLoginDto, onlyAdmin: boolean): Promise<LoginResponseType> {
@@ -211,7 +213,7 @@ export class AuthService {
       .update(randomStringGenerator())
       .digest('hex');
 
-    await this.usersService.create({
+    let registeredData = await this.usersService.create({
       ...data,
       email: data.email,
       role: {
@@ -222,6 +224,9 @@ export class AuthService {
       } as UserStatus,
       hash,
     });
+
+    await this.cooperatedService.update(registeredData.cooperated.id, {user: registeredData});
+
   }
 
   async confirmEmail(hash: string): Promise<void> {

@@ -12,5 +12,6 @@ import { OrganizationEntity } from "../organization/entities/organization.entity
   imports: [TypeOrmModule.forFeature([CooperatedEntity, OrganizationEntity])],
   controllers: [CooperatedController],
   providers: [IsExist, IsNotExist, CooperatedService, OrganizationService],
+  exports: [CooperatedService]
 })
 export class CooperatedModule {}

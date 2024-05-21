@@ -13,6 +13,7 @@ import { IsNotExist } from 'src/utils/validators/is-not-exists.validator';
 import { SessionModule } from 'src/modules/session/session.module';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { OrganizationModule } from '../organization/organization.module';
+import { CooperatedModule } from '../cooperated/cooperated.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { OrganizationModule } from '../organization/organization.module';
     MailModule,
     OrganizationModule,
     JwtModule.register({}),
+    CooperatedModule
   ],
   controllers: [AuthController],
   providers: [
