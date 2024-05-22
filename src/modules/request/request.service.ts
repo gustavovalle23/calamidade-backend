@@ -132,20 +132,20 @@ export class RequestService {
   }
 
   async findManyWithPagination(paginationOptions: IPaginationOptions, user: User): Promise<ListRequestsDto> {
-    const { ordering } = paginationOptions;
+    const { ordering, page, limit } = paginationOptions;
+    const userId = user.id;
 
     const res = await this.requestRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
+      where: [{ user: { id: userId } }, { godFather: { id: userId } }],
+      skip: (page - 1) * limit,
+      take: limit,
       order: {
         id: ordering ? ordering : "ASC",
       },
     });
 
-    const userId = user.id;
-
     const forMe = res.filter(request => request.user.id === userId);
-    const forOthers = res.filter(request => request.user.id !== userId);
+    const forOthers = res.filter(request => request.godFather?.id === userId);
 
     return { forMe, forOthers };
   }
