@@ -1,16 +1,18 @@
-import { APP_URL, ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/constants';
-import request from 'supertest';
-import { UserRoleEnum } from '../../src/modules/user/enums/roles.enum';
-import { UserStatusEnum } from '../../src/modules/user/enums/status.enum';
+import { APP_URL, ADMIN_EMAIL, ADMIN_PASSWORD } from "../utils/constants";
+import request from "supertest";
+import { UserRoleEnum } from "../../src/modules/user/enums/roles.enum";
+import { UserStatusEnum } from "../../src/modules/user/enums/status.enum";
 
-describe('Users admin (e2e)', () => {
+describe("Users admin (e2e)", () => {
   const app = APP_URL;
   let newUserFirst;
-  const newUserEmailFirst = `user-first.${Date.now()}@example.com`;
-  const newUserPasswordFirst = `secret`;
+  const now = Date.now()
+  const newUserEmailFirst = `user-first.${now}@example.com`;
+  const newUserPasswordFirst = `secrettttttttt`;
   const newUserChangedPasswordFirst = `new-secret`;
-  const newUserByAdminEmailFirst = `user-created-by-admin.${Date.now()}@example.com`;
+  const newUserByAdminEmailFirst = `user-created-by-admin.${now}@example.com`;
   const newUserByAdminPasswordFirst = `secret`;
+  const newUserDocument = '44444444442'
   let apiToken;
 
   beforeAll(async () => {
@@ -22,12 +24,35 @@ describe('Users admin (e2e)', () => {
       });
 
     await request(app)
+      .post(`/${process.env.API_PREFIX}/v1/cooperateds`)
+      .auth(apiToken, {
+        type: "bearer",
+      })
+      .send({
+        email: newUserEmailFirst,
+        firstName: `First${now}`,
+        lastName: "E2E",
+        document: newUserDocument,
+        phone: "16993000000",
+        organization: 1,
+      })
+      .then(({ body }) => {
+        console.log(body);
+      });
+
+      console.log(newUserEmailFirst)
+    await request(app)
       .post(`/${process.env.API_PREFIX}/v1/auth/email/register`)
       .send({
         email: newUserEmailFirst,
         password: newUserPasswordFirst,
-        firstName: `First${Date.now()}`,
-        lastName: 'E2E',
+        firstName: `First${now}`,
+        lastName: "E2E",
+        document: newUserDocument,
+        telephone: "16111111111",
+      })
+      .then(({ body }) => {
+        // console.log(body);
       });
 
     await request(app)
@@ -35,14 +60,15 @@ describe('Users admin (e2e)', () => {
       .send({ email: newUserEmailFirst, password: newUserPasswordFirst })
       .then(({ body }) => {
         newUserFirst = body.user;
+        console.log(body);
       });
   });
 
-  it(`Change password for new user: /${process.env.API_PREFIX}/v1/user/:id (PATCH)`, () => {
+  it.only(`Change password for new user: /${process.env.API_PREFIX}/v1/user/:id (PATCH)`, () => {
     return request(app)
       .patch(`/${process.env.API_PREFIX}/v1/user/${newUserFirst.id}`)
       .auth(apiToken, {
-        type: 'bearer',
+        type: "bearer",
       })
       .send({ password: newUserChangedPasswordFirst })
       .expect(200);
@@ -62,9 +88,9 @@ describe('Users admin (e2e)', () => {
     return request(app)
       .post(`/${process.env.API_PREFIX}/v1/user`)
       .auth(apiToken, {
-        type: 'bearer',
+        type: "bearer",
       })
-      .send({ email: 'fail-data' })
+      .send({ email: "fail-data" })
       .expect(422);
   });
 
@@ -72,13 +98,13 @@ describe('Users admin (e2e)', () => {
     return request(app)
       .post(`/${process.env.API_PREFIX}/v1/user`)
       .auth(apiToken, {
-        type: 'bearer',
+        type: "bearer",
       })
       .send({
         email: newUserByAdminEmailFirst,
         password: newUserByAdminPasswordFirst,
-        firstName: `UserByAdmin${Date.now()}`,
-        lastName: 'E2E',
+        firstName: `UserByAdmin${now}`,
+        lastName: "E2E",
         role: {
           id: UserRoleEnum.user,
         },
@@ -106,7 +132,7 @@ describe('Users admin (e2e)', () => {
     return request(app)
       .get(`/${process.env.API_PREFIX}/v1/user/list`)
       .auth(apiToken, {
-        type: 'bearer',
+        type: "bearer",
       })
       .expect(200)
       .send()
