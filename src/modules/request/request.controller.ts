@@ -30,7 +30,7 @@ import { CreateRequestForOthersDto } from "./dto/create-request-for-others.dto";
 import { OrderingEnum } from "./enums/ordering-filter.enum";
 
 @ApiBearerAuth()
-@Roles(UserRoleEnum.user)
+@Roles(UserRoleEnum.user, UserRoleEnum.admin)
 @UseGuards(AuthGuard("jwt"), RolesGuard)
 @ApiTags("Requests")
 @Controller({
@@ -52,6 +52,9 @@ export class RequestController {
     return await this.requestService.createForOthers(request.user, createRequestForOthersDto);
   }
 
+  @SerializeOptions({
+    groups: ["me"],
+  })
   @Get("/list")
   @ApiQuery({ name: "ordering", enum: OrderingEnum, required: false, description: "ASC para ascendente e DESC para descendente" })
   async findAll(
@@ -69,6 +72,30 @@ export class RequestController {
         limit,
         ordering,
       }),
+      { page, limit, ordering },
+    );
+  }
+
+  @SerializeOptions({
+    groups: ["me"],
+  })
+  @Get("/feed")
+  @ApiQuery({ name: "ordering", enum: OrderingEnum, required: false, description: "ASC para ascendente e DESC para descendente" })
+  async findAllFeed(
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query("ordering", new DefaultValuePipe(OrderingEnum.ASC)) ordering: OrderingEnum,
+  ) {
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    return infinityPagination(
+      await this.requestService.findManyWithPagination({
+        page,
+        limit,
+        ordering,
+      }, true),
       { page, limit, ordering },
     );
   }
