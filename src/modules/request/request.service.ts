@@ -9,12 +9,13 @@ import { IPaginationOptions } from "src/utils/types/pagination-options";
 import { JwtPayloadType } from "../auth/strategies/types/jwt-payload.type";
 import { NullableType } from "src/utils/types/nullable.type";
 import { RequestEntity } from "./entities/request.entity";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { UpdateRequestDto } from "./dto/update-request.dto";
 import { User } from "../user/entities/user.entity";
 import { UsersService } from "../user/users.service";
 import { HashGeneratorUtil } from "src/utils/hash-generator";
 import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
+import { RequestStatusEnum } from "./enums/status.enum";
 
 @Injectable()
 export class RequestService {
@@ -129,8 +130,28 @@ export class RequestService {
     }
   }
 
-  findManyWithPagination(paginationOptions: IPaginationOptions): Promise<RequestEntity[]> {
+  findManyWithPagination(paginationOptions: IPaginationOptions, feed?: boolean): Promise<RequestEntity[]> {
     const { ordering } = paginationOptions;
+
+    if (feed) {
+      return this.requestRepository.find({
+        skip: (paginationOptions.page - 1) * paginationOptions.limit,
+        take: paginationOptions.limit,
+        order: {
+          id: ordering ? ordering : "ASC",
+        },
+        relations: {
+          godFather: true
+        },
+        where: {
+          godFather: IsNull(),
+          status: {
+            name: Object.keys(RequestStatusEnum).find(key => RequestStatusEnum[key] === RequestStatusEnum.analysis)
+          }
+        }
+      });
+    }
+
     return this.requestRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
