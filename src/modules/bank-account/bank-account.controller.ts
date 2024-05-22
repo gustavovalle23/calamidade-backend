@@ -25,9 +25,9 @@ export class BankAccountController {
     return this.bankAccountService.create(request.user, createBankAccountDto);
   }
 
-  @Get()
-  findAll() {
-    return this.bankAccountService.findAll();
+  @Get('/me')
+  findAllByUser(@Request() request) {
+    return this.bankAccountService.findAllByUser(request.user);
   }
 
   @Get(':id')

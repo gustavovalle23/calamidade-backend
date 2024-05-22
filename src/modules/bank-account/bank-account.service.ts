@@ -49,8 +49,32 @@ export class BankAccountService {
     );
   }
 
-  findAll() {
-    return `This action returns all bankAccount`;
+  async findAllByUser(userJwtPayload: JwtPayloadType) {
+    const currentUser = await this.userRepository.findOne({
+      where: {
+        id: userJwtPayload.id,
+      },
+    });
+
+    if (!currentUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            user: "userNotFound",
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    return await this.bankAccountRepository.find({
+      where: {
+        user: {
+          id: currentUser.id
+        }
+      }
+    })
   }
 
   findOne(fields: EntityCondition<BankAccountEntity>): Promise<NullableType<BankAccountEntity>> {
