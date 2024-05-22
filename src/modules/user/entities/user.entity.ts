@@ -24,7 +24,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { OrganizationEntity } from 'src/modules/organization/entities/organization.entity';
 
 import { CooperatedEntity } from '../../cooperated/entities/cooperated.entity';
-import { AddressEntity } from '../address/entities/address.entity';
+import { UserAddressEntity } from '../address/entities/address.entity';
 import { RequestEntity } from 'src/modules/request/entities/request.entity';
 
 
@@ -103,8 +103,8 @@ export class User extends EntityHelper {
   @JoinColumn()
   cooperated: CooperatedEntity
 
-  @OneToMany(() => AddressEntity, (address) => address.user, { eager: true })
-  addresses: AddressEntity[]
+  @OneToMany(() => UserAddressEntity, (address) => address.user, { eager: true })
+  addresses: UserAddressEntity[]
 
   requests?: RequestEntity[]
 

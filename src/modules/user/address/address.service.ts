@@ -1,19 +1,20 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreateAddressDto } from "./dto/create-address.dto";
 import { UpdateAddressDto } from "./dto/update-address.dto";
-import { AddressEntity } from "./entities/address.entity";
+import { UserAddressEntity } from "./entities/address.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "../entities/user.entity";
 import { EntityCondition } from "../../../utils/types/entity-condition.type";
 import { NullableType } from "../../../utils/types/nullable.type";
 import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
+import { IPaginationOptions } from "src/utils/types/pagination-options";
 
 @Injectable()
-export class AddressService {
+export class UserAddressService {
   constructor(
-    @InjectRepository(AddressEntity)
-    private addressRepository: Repository<AddressEntity>,
+    @InjectRepository(UserAddressEntity)
+    private userAddressRepository: Repository<UserAddressEntity>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
@@ -33,8 +34,8 @@ export class AddressService {
       );
     }
 
-    return await this.addressRepository.save(
-      this.addressRepository.create({
+    return await this.userAddressRepository.save(
+      this.userAddressRepository.create({
         ...createAddressDto,
         user,
       }),
@@ -45,8 +46,15 @@ export class AddressService {
     return `This action returns all address`;
   }
 
-  async findOne(fields: EntityCondition<AddressEntity>): Promise<NullableType<AddressEntity>> {
-    const address = await this.addressRepository.findOne({
+  findManyWithPagination(paginationOptions: IPaginationOptions): Promise<UserAddressEntity[]> {
+    return this.userAddressRepository.find({
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+    });
+  }
+
+  async findOne(fields: EntityCondition<UserAddressEntity>): Promise<NullableType<UserAddressEntity>> {
+    const address = await this.userAddressRepository.findOne({
       where: fields,
     });
 
@@ -62,6 +70,6 @@ export class AddressService {
   }
 
   remove(id: number) {
-    this.addressRepository.delete({ id });
+    this.userAddressRepository.delete({ id });
   }
 }
