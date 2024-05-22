@@ -31,6 +31,7 @@ import { AddressModule } from "../user/address/address.module";
 import { ReceiptModule } from "../receipt/receipt.module";
 import { RequestModule } from "../request/request.module";
 import { AccidentsModule } from "../accidents/accidents.module";
+import { BankAccountModule } from "../bank-account/bank-account.module";
 
 @Module({
   imports: [
@@ -61,7 +62,8 @@ import { AccidentsModule } from "../accidents/accidents.module";
     OrganizationModule,
     AddressModule,
     ReceiptModule,
-    RequestModule
+    RequestModule,
+    BankAccountModule
   ],
   controllers: [AppController],
   providers: [AppService],
