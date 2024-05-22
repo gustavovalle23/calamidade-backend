@@ -61,20 +61,21 @@ export class RequestController {
     @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query("ordering", new DefaultValuePipe(OrderingEnum.ASC)) ordering: OrderingEnum,
+    @Request() request,
   ) {
     if (limit > 50) {
       limit = 50;
     }
 
-    return infinityPagination(
-      await this.requestService.findManyWithPagination({
-        page,
-        limit,
-        ordering,
-      }),
-      { page, limit, ordering },
-    );
+    const paginationOptions = { page, limit, ordering };
+    const listRequestsDto = await this.requestService.findManyWithPagination(paginationOptions, request.user);
+
+    return {
+      forMe: infinityPagination(listRequestsDto.forMe, paginationOptions),
+      forOthers: infinityPagination(listRequestsDto.forOthers, paginationOptions),
+    };
   }
+
 
   @SerializeOptions({
     groups: ["me"],
@@ -85,17 +86,18 @@ export class RequestController {
     @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query("ordering", new DefaultValuePipe(OrderingEnum.ASC)) ordering: OrderingEnum,
+    @Request() request,
   ) {
     if (limit > 50) {
       limit = 50;
     }
 
     return infinityPagination(
-      await this.requestService.findManyWithPagination({
+      await this.requestService.findManyFeedWithPagination({
         page,
         limit,
         ordering,
-      }, true),
+      }),
       { page, limit, ordering },
     );
   }
