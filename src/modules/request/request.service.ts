@@ -16,6 +16,7 @@ import { UsersService } from "../user/users.service";
 import { HashGeneratorUtil } from "src/utils/hash-generator";
 import { ResourceNotFoundException } from "src/infrastructure/exceptions/resource-not-found.exception";
 import { RequestStatusEnum } from "./enums/status.enum";
+import { ListRequestsDto } from "./dto/list-request.dto";
 
 @Injectable()
 export class RequestService {
@@ -130,33 +131,42 @@ export class RequestService {
     }
   }
 
-  findManyWithPagination(paginationOptions: IPaginationOptions, feed?: boolean): Promise<RequestEntity[]> {
+  async findManyWithPagination(paginationOptions: IPaginationOptions, user: User): Promise<ListRequestsDto> {
     const { ordering } = paginationOptions;
 
-    if (feed) {
-      return this.requestRepository.find({
-        skip: (paginationOptions.page - 1) * paginationOptions.limit,
-        take: paginationOptions.limit,
-        order: {
-          id: ordering ? ordering : "ASC",
-        },
-        relations: {
-          godFather: true
-        },
-        where: {
-          godFather: IsNull(),
-          status: {
-            name: Object.keys(RequestStatusEnum).find(key => RequestStatusEnum[key] === RequestStatusEnum.analysis)
-          }
-        }
-      });
-    }
+    const res = await this.requestRepository.find({
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+      order: {
+        id: ordering ? ordering : "ASC",
+      },
+    });
+
+    const userId = user.id;
+
+    const forMe = res.filter(request => request.user.id === userId);
+    const forOthers = res.filter(request => request.user.id !== userId);
+
+    return { forMe, forOthers };
+  }
+
+  async findManyFeedWithPagination(paginationOptions: IPaginationOptions): Promise<RequestEntity[]> {
+    const { ordering } = paginationOptions;
 
     return this.requestRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
       order: {
         id: ordering ? ordering : "ASC",
+      },
+      relations: {
+        godFather: true,
+      },
+      where: {
+        godFather: IsNull(),
+        status: {
+          name: Object.keys(RequestStatusEnum).find(key => RequestStatusEnum[key] === RequestStatusEnum.analysis),
+        },
       },
     });
   }
