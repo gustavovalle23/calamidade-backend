@@ -41,6 +41,7 @@ export class BankAccountService {
     return this.bankAccountRepository.save(
       this.bankAccountRepository.create({
         ...createBankAccountDto,
+        document: currentUser.document,
         user: {
           id: currentUser.id,
         },

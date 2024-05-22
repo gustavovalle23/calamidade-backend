@@ -8,21 +8,23 @@ export class BankAccountEntity extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index({ unique: false })
-  @Column({ type: String })
+  @Column({ type: 'varchar' })
   bankName: string;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   agency: string | null;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   account: string | null;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   digit: string | null;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   keyPix: string | null;
+
+  @Column({ type: 'varchar' })
+  document: string;
 
   @ManyToOne(() => User, { eager: false })
   user: User;
